@@ -2,129 +2,102 @@ Apuntes de Computación II: Git y Entrada/Salida en Unix/Linux
 
 1. Control de Versiones con Git
 
-1.1 Introducción
-Git es un sistema de control de versiones distribuido que permite a los desarrolladores gestionar cambios en su código, colaborar y mantener un historial de modificaciones. Se diferencia de los sistemas centralizados anteriores (SVN, CVS) al permitir que cada desarrollador tenga una copia completa del repositorio.
+Git: Sistema de control de versiones distribuido que permite a los desarrolladores gestionar el código y colaborar sin conexión.
+Ventajas: Trabajo offline, integridad con SHA-1, ramas para colaboración.
+Comandos básicos:
 
-Ventajas de Git:
-- Permite trabajar sin conexión a internet.
-- Garantiza integridad mediante el uso de hash SHA-1.
-- Facilita la colaboración en equipo con ramas y fusión de cambios.
+Verificar instalación:
+  git --version
 
-1.2 Instalación y Configuración
-Para verificar si Git está instalado:
+Instalar Git:
+  Linux: sudo apt install git
+  MacOS: brew install git
+  Windows: Descargar de Git SCM
 
-git --version
+Configurar usuario:
+  git config --global user.name "Tu Nombre"
+  git config --global user.email "tucorreo@example.com"
 
+Inicializar repositorio:
+  git init
 
-Para instalar Git:
-- Linux: sudo apt install git
-- MacOS: brew install git
-- Windows: Descargar desde https://git-scm.com/
+Agregar cambios:
+  git add .
 
-Configurar usuario y correo:
+Hacer commit:
+  git commit -m "Primer commit"
 
-git config --global user.name "Tu Nombre"
-git config --global user.email "tucorreo@example.com"
+Ver historial:
+  git log --oneline
 
-Verificar configuración:
+Conexión a repositorios remotos:
 
-git config --global --list
+Agregar remoto:
+  git remote add origin https://github.com/tuusuario/Repositorio.git
 
-1.3 Creación y Uso de Repositorios
-
-1.Crear un directorio y moverse dentro de él:
-
-mkdir ComputacionII
-cd ComputacionII
-
-2.Inicializar un repositorio Git:
-
-git init
-
-3.Verificar el estado del repositorio:
-
-git status
-
-1.4 Flujo de Trabajo en Git
-1. Modificar archivos.
-2. Agregar cambios al área de preparación:
-
-   git add .
-
-3. Realizar un commit:
-
-   git commit -m "Primer commit"
-   
-4. Visualizar historial de cambios:
-   
-   git log --oneline
-
-1.5 Conexión con Repositorios Remotos
-1. Crear un repositorio en GitHub o GitLab.
-2. Vincularlo con el repositorio local:
-
-   git remote add origin https://github.com/tuusuario/ComputacionII.git
-   
-3. Subir cambios:
-   
-   git push -u origin main
+Subir cambios:
+  git push -u origin main
 
 2. Entrada y Salida en Unix/Linux
 
-2.1 Conceptos Básicos
-Unix/Linux maneja tres flujos de datos fundamentales:
-- Entrada estándar (stdin, descriptor 0): Fuente de datos (teclado o archivo).
-- Salida estándar (stdout, descriptor 1): Donde un programa imprime resultados.
-- Salida de error estándar (stderr, descriptor 2): Para mensajes de error.
+Flujos básicos:
+  stdin (0): Entrada estándar (teclado o archivo).
+  stdout (1): Salida estándar (resultados de comandos).
+  stderr (2): Salida de error estándar.
 
-2.2 Redirección de Entrada y Salida
-- `>` Redirige salida a un archivo, sobrescribiendo:
-  
-  echo "Hola" > mensaje.txt
-  
-- `>>` Agrega contenido sin sobrescribir:
-  
-  echo "Nueva línea" >> mensaje.txt
-  
-- `<` Usa un archivo como entrada:
-  
-  wc -l < mensaje.txt
-  
-- `2>` Redirige errores a un archivo:
-  
-  ls inexistente 2> error.log
-  
-- `&>` Redirige salida y errores al mismo archivo:
-  
+Redirección de Entrada/Salida:
+
+Sobrescribir archivo:
+  echo "Hola" > archivo.txt
+
+Agregar contenido a archivo:
+  echo "Adición" >> archivo.txt
+
+Leer desde un archivo:
+  wc -l < archivo.txt
+
+Redirigir errores:
+  comando 2> error.log
+
+Redirigir salida y errores:
   comando &> salida.log
-  
-- `/dev/null` Descarta salida:
-  
+
+Descartar salida:
   comando 2>/dev/null
 
-2.3 Uso de Pipes (`|`)
-Permiten encadenar comandos:
+Pipes (|):
+Permiten encadenar comandos. 
+Ejemplo:
+  ls -l | grep ".txt"
 
-ls -l | grep ".txt"
+Archivos especiales:
+  /dev/null: Descarta datos.
+  /dev/tty: Representa la terminal.
 
-2.4 Archivos Especiales en Unix/Linux
-- `/dev/null`: Descarta cualquier dato enviado a él.
-- `/dev/tty`: Representa la terminal actual.
+3. Manejo de Argumentos en Python: getopt y argparse
 
-3. Ejercicios Prácticos
+getopt:
 
-Ejercicio 1: Crear y Configurar un Repositorio
-1. Crear una carpeta `Proyecto` e inicializar un repositorio Git.
-2. Configurar usuario y correo.
-3. Crear un archivo `README.md`, agregarlo y hacer un commit.
+Utiliza para argumentos simples y es adecuado para scripts pequeños.
+Ejemplo:
+  import getopt
+  opts, args = getopt.getopt(sys.argv[1:], 'i:o:')
+  for opt, arg in opts:
+      if opt == '-i':
+          archivo_entrada = arg
+      elif opt == '-o':
+          archivo_salida = arg
+  argparse:
 
-Ejercicio 2: Redirección de Salida y Errores
-1. Listar archivos de un directorio y guardar el resultado en `archivos.txt`.
-2. Intentar listar un directorio inexistente y redirigir el error a `errores.log`.
-3. Contar las líneas de `archivos.txt` usando redirección de entrada.
+Más flexible y robusto, permite validación, mensajes de ayuda y manejo de tipos complejos.
+Ejemplo básico:
+  import argparse
+  parser = argparse.ArgumentParser(description='Procesa los archivos de entrada y salida.')
+  parser.add_argument('-i', '--input', help='Archivo de entrada', required=True)
+  parser.add_argument('-o', '--output', help='Archivo de salida', default='salida.txt')
+  args = parser.parse_args()
+  print(f'Entrada: {args.input}, Salida: {args.output}')
 
-Ejercicio 3: Uso de Pipes
-1. Mostrar los archivos `.txt` en un directorio usando `ls` y `grep`.
-2. Contar la cantidad de archivos `.log` en `/var/log` usando `ls`, `grep` y `wc -l`.
-
-
+Tipos de datos:
+Para enteros: type=int
+Para listas: nargs='+' o nargs='*'
