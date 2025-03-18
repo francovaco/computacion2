@@ -1,0 +1,130 @@
+Apuntes de Computación II: Git y Entrada/Salida en Unix/Linux
+
+1. Control de Versiones con Git
+
+1.1 Introducción
+Git es un sistema de control de versiones distribuido que permite a los desarrolladores gestionar cambios en su código, colaborar y mantener un historial de modificaciones. Se diferencia de los sistemas centralizados anteriores (SVN, CVS) al permitir que cada desarrollador tenga una copia completa del repositorio.
+
+Ventajas de Git:
+- Permite trabajar sin conexión a internet.
+- Garantiza integridad mediante el uso de hash SHA-1.
+- Facilita la colaboración en equipo con ramas y fusión de cambios.
+
+1.2 Instalación y Configuración
+Para verificar si Git está instalado:
+
+git --version
+
+
+Para instalar Git:
+- Linux: sudo apt install git
+- MacOS: brew install git
+- Windows: Descargar desde https://git-scm.com/
+
+Configurar usuario y correo:
+
+git config --global user.name "Tu Nombre"
+git config --global user.email "tucorreo@example.com"
+
+Verificar configuración:
+
+git config --global --list
+
+1.3 Creación y Uso de Repositorios
+
+1.Crear un directorio y moverse dentro de él:
+
+mkdir ComputacionII
+cd ComputacionII
+
+2.Inicializar un repositorio Git:
+
+git init
+
+3.Verificar el estado del repositorio:
+
+git status
+
+1.4 Flujo de Trabajo en Git
+1. Modificar archivos.
+2. Agregar cambios al área de preparación:
+
+   git add .
+
+3. Realizar un commit:
+
+   git commit -m "Primer commit"
+   
+4. Visualizar historial de cambios:
+   
+   git log --oneline
+
+1.5 Conexión con Repositorios Remotos
+1. Crear un repositorio en GitHub o GitLab.
+2. Vincularlo con el repositorio local:
+
+   git remote add origin https://github.com/tuusuario/ComputacionII.git
+   
+3. Subir cambios:
+   
+   git push -u origin main
+
+2. Entrada y Salida en Unix/Linux
+
+2.1 Conceptos Básicos
+Unix/Linux maneja tres flujos de datos fundamentales:
+- Entrada estándar (stdin, descriptor 0): Fuente de datos (teclado o archivo).
+- Salida estándar (stdout, descriptor 1): Donde un programa imprime resultados.
+- Salida de error estándar (stderr, descriptor 2): Para mensajes de error.
+
+2.2 Redirección de Entrada y Salida
+- `>` Redirige salida a un archivo, sobrescribiendo:
+  
+  echo "Hola" > mensaje.txt
+  
+- `>>` Agrega contenido sin sobrescribir:
+  
+  echo "Nueva línea" >> mensaje.txt
+  
+- `<` Usa un archivo como entrada:
+  
+  wc -l < mensaje.txt
+  
+- `2>` Redirige errores a un archivo:
+  
+  ls inexistente 2> error.log
+  
+- `&>` Redirige salida y errores al mismo archivo:
+  
+  comando &> salida.log
+  
+- `/dev/null` Descarta salida:
+  
+  comando 2>/dev/null
+
+2.3 Uso de Pipes (`|`)
+Permiten encadenar comandos:
+
+ls -l | grep ".txt"
+
+2.4 Archivos Especiales en Unix/Linux
+- `/dev/null`: Descarta cualquier dato enviado a él.
+- `/dev/tty`: Representa la terminal actual.
+
+3. Ejercicios Prácticos
+
+Ejercicio 1: Crear y Configurar un Repositorio
+1. Crear una carpeta `Proyecto` e inicializar un repositorio Git.
+2. Configurar usuario y correo.
+3. Crear un archivo `README.md`, agregarlo y hacer un commit.
+
+Ejercicio 2: Redirección de Salida y Errores
+1. Listar archivos de un directorio y guardar el resultado en `archivos.txt`.
+2. Intentar listar un directorio inexistente y redirigir el error a `errores.log`.
+3. Contar las líneas de `archivos.txt` usando redirección de entrada.
+
+Ejercicio 3: Uso de Pipes
+1. Mostrar los archivos `.txt` en un directorio usando `ls` y `grep`.
+2. Contar la cantidad de archivos `.log` en `/var/log` usando `ls`, `grep` y `wc -l`.
+
+
