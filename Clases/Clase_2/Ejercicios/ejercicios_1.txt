@@ -1,0 +1,100 @@
+4.1
+1
+import os
+
+pid = os.fork()
+if pid == 0:
+    print("[HIJO] PID:", os.getpid(), "PPID:", os.getppid())
+else:
+    print("[PADRE] PID:", os.getpid(), "Hijo:", pid)
+
+2
+import os
+
+for i in range(2):
+    pid = os.fork()
+    if pid == 0:
+        print(f"[HIJO {i}] PID: {os.getpid()}  Padre: {os.getppid()}")
+        os._exit(0)
+
+for _ in range(2):
+    os.wait()
+
+4.2
+3
+import os
+
+pid = os.fork()
+if pid == 0:
+    os.execlp("ls", "ls", "-l")  # reemplaza al proceso hijo con 'ls'
+else:
+    os.wait()
+
+4
+import os
+import time
+
+def crear_hijo(nombre):
+    pid = os.fork()
+    if pid == 0:
+        print(f"[HIJO {nombre}] PID: {os.getpid()}")
+        time.sleep(1)
+        os._exit(0)
+    else:
+        os.wait()
+
+crear_hijo("A")
+crear_hijo("B")
+
+4.3
+5
+import os, time
+
+pid = os.fork()
+if pid == 0:
+    print("[HIJO] Finalizando")
+    os._exit(0)
+else:
+    print("[PADRE] No llamaré a wait() aún. Observa el zombi con 'ps -el'")
+    time.sleep(15)
+    os.wait()
+
+6
+import os, time
+
+pid = os.fork()
+if pid > 0:
+    print("[PADRE] Terminando")
+    os._exit(0)
+else:
+    print("[HIJO] Ahora soy huérfano. Mi nuevo padre será init/systemd")
+    time.sleep(10)
+
+7
+import os
+
+for _ in range(3):
+    pid = os.fork()
+    if pid == 0:
+        print(f"[HIJO] PID: {os.getpid()}  Padre: {os.getppid()}")
+        os._exit(0)
+
+for _ in range(3):
+    os.wait()
+
+4.4
+import os, time
+
+def atender_cliente(n):
+    pid = os.fork()
+    if pid == 0:
+        print(f"[HIJO {n}] Atendiendo cliente")
+        time.sleep(2)
+        print(f"[HIJO {n}] Finalizado")
+        os._exit(0)
+
+for cliente in range(5):
+    atender_cliente(cliente)
+
+for _ in range(5):
+    os.wait()

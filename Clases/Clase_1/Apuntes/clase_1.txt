@@ -87,7 +87,8 @@ Ejemplo:
           archivo_entrada = arg
       elif opt == '-o':
           archivo_salida = arg
-  argparse:
+  
+argparse:
 
 Más flexible y robusto, permite validación, mensajes de ayuda y manejo de tipos complejos.
 Ejemplo básico:

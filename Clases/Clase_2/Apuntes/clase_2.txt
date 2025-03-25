@@ -1,0 +1,25 @@
+1. Introducción
+
+Los procesos son la unidad fundamental de ejecución en un sistema operativo. Se diferencian de los programas porque un proceso es un programa en ejecución con recursos asignados. Durante la clase, analizamos su definición, atributos y cómo se gestionan en UNIX/Linux.
+
+2. Fundamentos de Procesos
+
+Atributos clave: PID, PPID, estado, contador de programa, pila, segmento de datos y archivos abiertos.
+Diferencias entre programa y proceso: Un programa es un conjunto de instrucciones en disco, mientras que un proceso es su instancia en ejecución.
+3. Modelo de Procesos en UNIX/Linux
+
+Jerarquía de procesos: Todo proceso (excepto init o systemd) tiene un proceso padre.
+Creación y transformación: Se usa fork() para clonar un proceso y exec() para reemplazar su imagen de memoria.
+Herramientas de visualización: ps, pstree, htop permiten observar la relación entre procesos.
+4. Manipulación de Procesos con Python
+
+Uso de os.fork() para crear procesos hijos.
+os.wait() para sincronización y evitar procesos zombis.
+os.exec() para reemplazar un proceso por otro.
+5. Procesos Zombis y Huérfanos
+
+Zombis: Procesos que terminaron pero no fueron recolectados por el padre. Se evitan con os.wait().
+Huérfanos: Procesos cuyo padre terminó antes. Son adoptados por init/systemd.
+
+Conclusión:
+El manejo de procesos es esencial en sistemas operativos y programación de sistemas. Aprender a crearlos, sincronizarlos y depurarlos con herramientas como ps y htop permite construir software más eficiente.
