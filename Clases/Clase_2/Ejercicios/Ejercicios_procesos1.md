@@ -1,5 +1,10 @@
-4.1
-1
+# Ejercicios de Procesos en Python
+
+## 4.1 Creación y manejo de procesos
+
+### 1. Creación de un proceso hijo
+
+```python
 import os
 
 pid = os.fork()
@@ -7,8 +12,11 @@ if pid == 0:
     print("[HIJO] PID:", os.getpid(), "PPID:", os.getppid())
 else:
     print("[PADRE] PID:", os.getpid(), "Hijo:", pid)
+```
 
-2
+### 2. Creación de múltiples procesos hijos
+
+```python
 import os
 
 for i in range(2):
@@ -19,18 +27,25 @@ for i in range(2):
 
 for _ in range(2):
     os.wait()
+```
 
-4.2
-3
+## 4.2 Manipulación de procesos
+
+### 3. Reemplazo del proceso hijo con `execlp`
+
+```python
 import os
 
 pid = os.fork()
 if pid == 0:
-    os.execlp("ls", "ls", "-l")  # reemplaza al proceso hijo con 'ls'
+    os.execlp("ls", "ls", "-l")  # Reemplaza el proceso hijo con 'ls'
 else:
     os.wait()
+```
 
-4
+### 4. Creación de hijos con espera
+
+```python
 import os
 import time
 
@@ -45,9 +60,13 @@ def crear_hijo(nombre):
 
 crear_hijo("A")
 crear_hijo("B")
+```
 
-4.3
-5
+## 4.3 Procesos zombis y huérfanos
+
+### 5. Proceso zombi
+
+```python
 import os, time
 
 pid = os.fork()
@@ -58,8 +77,11 @@ else:
     print("[PADRE] No llamaré a wait() aún. Observa el zombi con 'ps -el'")
     time.sleep(15)
     os.wait()
+```
 
-6
+### 6. Proceso huérfano
+
+```python
 import os, time
 
 pid = os.fork()
@@ -69,8 +91,11 @@ if pid > 0:
 else:
     print("[HIJO] Ahora soy huérfano. Mi nuevo padre será init/systemd")
     time.sleep(10)
+```
 
-7
+### 7. Creación de múltiples procesos con `fork()`
+
+```python
 import os
 
 for _ in range(3):
@@ -81,8 +106,11 @@ for _ in range(3):
 
 for _ in range(3):
     os.wait()
+```
 
-4.4
+## 4.4 Simulación de atención de clientes con procesos
+
+```python
 import os, time
 
 def atender_cliente(n):
@@ -98,3 +126,4 @@ for cliente in range(5):
 
 for _ in range(5):
     os.wait()
+```

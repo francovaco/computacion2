@@ -1,3 +1,6 @@
+## Ejercicios de Terminal
+
+```sh
 1. ls > lista.txt
 
 2. wc -l < lista.txt
@@ -23,3 +26,4 @@
    exec >&-
 
 10. ls /var/log | grep "syslog" | wc -l &> conteo_syslog.log
+```

