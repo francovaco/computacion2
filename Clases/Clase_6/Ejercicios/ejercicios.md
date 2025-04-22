@@ -1,5 +1,6 @@
 ### Ejercicio 1 — Lectura diferida
 **Objetivo**: Comprender el bloqueo de lectura en un FIFO.
+
 **lector_fifo.py**:
 ```python
 import os
@@ -50,6 +51,7 @@ El lector imprime cada línea apenas se recibe, respetando el **orden de llegada
 
 ### Ejercicio 2 — FIFO como buffer entre procesos
 **Objetivo**: Simular un flujo de datos continuo entre dos procesos.
+
 **escritor_fifo.py**:
 ```python
 import os
@@ -108,6 +110,7 @@ if __name__ == "__main__":
 
 ### Ejercicio 3 — FIFO + archivos
 **Objetivo**: Usar un FIFO como entrada para un proceso que guarda datos en un archivo.
+
 **escritor_fifo.py**:
 ```python
 import os
@@ -158,6 +161,7 @@ if __name__ == "__main__":
 
 ### Ejercicio 4 — Múltiples productores
 **Objetivo**: Estudiar el comportamiento de múltiples escritores sobre un mismo FIFO.
+
 **escritor_fifo.py**:
 ```python
 import os
@@ -223,6 +227,7 @@ Sí, las escrituras al FIFO son atómicas siempre que el tamaño del mensaje sea
 
 ### Ejercicio 5 — FIFO con apertura condicional
 **Objetivo**: Usar `os.open()` y manejar errores.
+
 **lector_fifo.py**:
 ```python
 import os
@@ -290,6 +295,7 @@ if __name__ == "__main__":
 
 ### Ejercicio 6 — Chat asincrónico con doble FIFO
 **Objetivo**: Crear una estructura de comunicación bidireccional entre dos usuarios.
+
 **usuario_a.py**:
 ```python
 import os
@@ -376,6 +382,7 @@ if __name__ == "__main__":
 
 ### Ejercicio 7 — Monitor de temperatura simulado
 **Objetivo**: Simular un sensor que envía datos por FIFO y un visualizador que los muestra.
+
 **simulador.py**:
 ```python
 import os
