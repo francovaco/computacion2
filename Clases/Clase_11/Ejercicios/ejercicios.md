@@ -205,7 +205,6 @@ with open(fifo_path, "r") as fifo:
     for line in fifo:
         print(f"[RECEPTOR] Mensaje recibido: {line.strip()}")
 ```
-
 En una terminal:
 ```bash
 python3 receptor.py
