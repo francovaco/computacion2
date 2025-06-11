@@ -214,3 +214,428 @@ En otra terminal:
 python3 emisor.py
 ```
 Escribimos mensajes en emisor.py y vemos cómo aparecen en receptor.py
+
+## Ejercicio 7
+```python
+import multiprocessing
+import os
+import time
+from datetime import datetime
+
+LOG_FILE = "log_procesos.txt"
+
+def escribir_log(lock, identificador):
+    for _ in range(3):
+        with lock:
+            with open(LOG_FILE, "a") as f:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                f.write(f"[{timestamp}] Proceso {identificador} (PID: {os.getpid()}) escribiendo al log.\n")
+                print(f"[{timestamp}] Proceso {identificador} escribió en el log.")
+        time.sleep(1)
+
+def main():
+    lock = multiprocessing.Lock()
+    procesos = []
+
+    for i in range(4):
+        p = multiprocessing.Process(target=escribir_log, args=(lock, f"P{i+1}"))
+        procesos.append(p)
+        p.start()
+
+    for p in procesos:
+        p.join()
+
+    print("Todos los procesos han terminado. Revisa el archivo log_procesos.txt.")
+
+if __name__ == "__main__":
+    main()
+```
+
+## Ejercicio 8
+Sin sincronización (con condición de carrera)
+```python
+import multiprocessing
+
+def incrementar_sin_lock(contador):
+    for _ in range(100_000):
+        contador.value += 1  # No es atómico
+
+if __name__ == "__main__":
+    contador = multiprocessing.Value('i', 0)  # 'i' = entero con signo
+    p1 = multiprocessing.Process(target=incrementar_sin_lock, args=(contador,))
+    p2 = multiprocessing.Process(target=incrementar_sin_lock, args=(contador,))
+
+    p1.start()
+    p2.start()
+    p1.join()
+    p2.join()
+
+    print(f"Valor final sin Lock: {contador.value} (esperado: 200000)")
+```
+Resultado esperado:
+Probablemente menor a 200000.
+Variará entre ejecuciones debido a la condición de carrera.
+
+Con sincronización (sin condición de carrera)
+```python
+import multiprocessing
+
+def incrementar_con_lock(contador, lock):
+    for _ in range(100_000):
+        with lock:
+            contador.value += 1
+
+if __name__ == "__main__":
+    contador = multiprocessing.Value('i', 0)
+    lock = multiprocessing.Lock()
+    p1 = multiprocessing.Process(target=incrementar_con_lock, args=(contador, lock))
+    p2 = multiprocessing.Process(target=incrementar_con_lock, args=(contador, lock))
+
+    p1.start()
+    p2.start()
+    p1.join()
+    p2.join()
+
+    print(f"Valor final con Lock: {contador.value} (esperado: 200000)")
+```
+Resultado esperado:
+Siempre exactamente 200000.
+El Lock garantiza que no se pierdan actualizaciones.
+
+## Ejercicio 9
+```python
+import multiprocessing
+import time
+import os
+import random
+
+def zona_critica(sem: multiprocessing.Semaphore, identificador: str):
+    print(f"[{identificador}] PID {os.getpid()} intentando entrar a la zona crítica.")
+    with sem:
+        print(f"[{identificador}] ✨ Entró a la zona crítica.")
+        time.sleep(random.uniform(1, 3))  # Simula trabajo en zona crítica
+        print(f"[{identificador}] Saliendo de la zona crítica.")
+
+if __name__ == "__main__":
+    sem = multiprocessing.Semaphore(3)  # Solo 3 procesos a la vez
+    procesos = []
+
+    for i in range(10):
+        p = multiprocessing.Process(target=zona_critica, args=(sem, f"P{i+1}"))
+        procesos.append(p)
+        p.start()
+
+    for p in procesos:
+        p.join()
+
+    print("Todos los procesos han terminado.")
+```
+
+## Ejercicio 10
+```python
+import multiprocessing
+import time
+import random
+
+class CuentaBancaria:
+    def __init__(self, saldo_inicial, lock):
+        self.saldo = multiprocessing.Value('i', saldo_inicial)
+        self.lock = lock
+
+    def depositar(self, monto):
+        with self.lock:
+            self._modificar_saldo(monto)
+
+    def retirar(self, monto):
+        with self.lock:
+            self._modificar_saldo(-monto)
+
+    def _modificar_saldo(self, monto):
+        with self.lock:
+            saldo_anterior = self.saldo.value
+            time.sleep(random.uniform(0.1, 0.3))  # Simula latencia
+            self.saldo.value = saldo_anterior + monto
+            print(f"[{multiprocessing.current_process().name}] Nuevo saldo: {self.saldo.value}")
+
+def tarea(cuenta: CuentaBancaria):
+    for _ in range(3):
+        if random.choice([True, False]):
+            cuenta.depositar(50)
+        else:
+            cuenta.retirar(30)
+        time.sleep(random.uniform(0.2, 0.5))
+
+if __name__ == "__main__":
+    rlock = multiprocessing.RLock()
+    cuenta = CuentaBancaria(saldo_inicial=100, lock=rlock)
+
+    procesos = []
+    for i in range(4):
+        p = multiprocessing.Process(target=tarea, args=(cuenta,), name=f"Cliente-{i+1}")
+        procesos.append(p)
+        p.start()
+
+    for p in procesos:
+        p.join()
+
+    print(f"Saldo final: {cuenta.saldo.value}")
+```
+
+## Ejercicio 11
+```python
+import os
+import signal
+import time
+
+def handler(sig, frame):
+    print(f"\n Señal recibida: {signal.Signals(sig).name} (PID: {os.getpid()})")
+
+if __name__ == "__main__":
+    print(f"[PROCESO] PID: {os.getpid()}")
+    print("[PROCESO] Esperando señal SIGUSR1...")
+
+    signal.signal(signal.SIGUSR1, handler)
+
+    # Espera pasiva usando bucle infinito (alternativamente, usar signal.pause())
+    while True:
+        time.sleep(1)
+```
+Ejecutar en una terminal:
+```bash
+python3 manejador_senal.py
+```
+Desde otra terminal:
+```bash
+kill -SIGUSR1 [pid]
+```
+El proceso debería imprimir un mensaje como este:
+```bash
+Señal recibida: SIGUSR1 (PID: 12345)
+```
+
+## Ejercicio 12
+### Generafor.py
+```python
+import argparse
+import random
+
+def main():
+    parser = argparse.ArgumentParser(description="Generador de números aleatorios")
+    parser.add_argument("--n", type=int, required=True, help="Cantidad de números a generar")
+    args = parser.parse_args()
+
+    for _ in range(args.n):
+        print(random.randint(0, 100))  # Rango fijo: 0 a 100
+
+if __name__ == "__main__":
+    main()
+```
+
+### Filtro.py
+```python
+import argparse
+import sys
+
+def main():
+    parser = argparse.ArgumentParser(description="Filtro de números mayores que un umbral")
+    parser.add_argument("--min", type=int, required=True, help="Valor mínimo para filtrar")
+    args = parser.parse_args()
+
+    for line in sys.stdin:
+        try:
+            num = int(line.strip())
+            if num > args.min:
+                print(num)
+        except ValueError:
+            continue  # Ignora líneas no numéricas
+
+if __name__ == "__main__":
+    main()
+```
+Desde una terminal:
+```bash
+python3 generador.py --n 100 | python3 filtro.py --min 50
+```
+Esto imprimirá únicamente los números mayores a 50 generados aleatoriamente.
+
+## Ejercicio 13
+```python
+import os
+import time
+
+def crear_hijo(nombre):
+    pid = os.fork()
+    if pid == 0:
+        print(f"[HIJO {nombre}] PID: {os.getpid()}, PPID: {os.getppid()}")
+        time.sleep(5)
+        os._exit(0)
+
+if __name__ == "__main__":
+    print(f"[PADRE] PID: {os.getpid()}")
+    crear_hijo("A")
+    crear_hijo("B")
+    os.wait()
+    os.wait()
+    print("[PADRE] Ambos hijos han terminado.")
+```
+En una terminal:
+```bash
+python3 jerarquia_procesos.py
+```
+En otra terminal:
+```bash
+pstree -p | grep -A 5 [PID_DEL_PADRE]
+```
+Ejemplo de la salida esperada:
+1234 python3 jerarquia_procesos.py
+ ├─1235 [HIJO A]
+ └─1236 [HIJO B]
+
+## Ejercicio 14
+### Dormir.py
+```python
+import time
+import os
+import signal
+import sys
+
+def handler(sig, frame):
+    print(f"\n🛑 Señal {sig} recibida. Terminando proceso {os.getpid()}...")
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, handler)
+
+print(f"[PYTHON] PID: {os.getpid()} - Durmiendo por 10 segundos...")
+time.sleep(10)
+print("[PYTHON] Finalizado normalmente.")
+```
+
+### Lanzador.sh
+```bash
+echo "[BASH] Ejecutando dormir.py en segundo plano..."
+python3 dormir.py &
+PID=$!
+echo "[BASH] PID del proceso Python: $PID"
+echo "[BASH] Use 'ps' o 'kill -SIGTERM $PID' desde otra terminal para interactuar."
+wait $PID
+echo "[BASH] El proceso ha finalizado."
+```
+En una terminal:
+```bash
+bash lanzador.sh
+```
+En otra terminal verificamos el proceso:
+```bash
+ps -p [PID]
+```
+Terminar el proceso manualmente:
+```bash
+kill -SIGTERM [PID]
+```
+Observamos que el script Python captura la señal y finaliza limpiamente.
+
+## Ejercicio 15
+```bash
+echo "PID  PPID  NOMBRE              ESTADO"
+echo "----------------------------------------"
+
+declare -A estados
+
+for pid in /proc/[0-9]*; do
+    if [ -f "$pid/status" ]; then
+        PID=$(basename "$pid")
+        PPID=$(grep "^PPid:" "$pid/status" | awk '{print $2}')
+        NAME=$(grep "^Name:" "$pid/status" | awk '{print $2}')
+        STATE=$(grep "^State:" "$pid/status" | awk '{print $2}')
+        
+        printf "%-5s %-5s %-18s %-2s\n" "$PID" "$PPID" "$NAME" "$STATE"
+
+        # Contar estado
+        ((estados[$STATE]++))
+    fi
+done
+
+echo ""
+echo "Resumen de estados de procesos:"
+for estado in "${!estados[@]}"; do
+    echo "Estado $estado: ${estados[$estado]} proceso(s)"
+done
+```
+Damos permisos de ejecución:
+```bash
+chmod +x analisis_procesos.sh
+```
+Lo ejecutamos:
+```bash
+./analisis_procesos.sh
+```
+Ejemplo de salida esperada:
+PID   PPID  NOMBRE              ESTADO
+----------------------------------------
+1     0     systemd             S
+321   1     bash                S
+456   321   python3             R
+789   1     kthreadd            S
+...
+
+Resumen de estados de procesos:
+Estado S: 132 proceso(s)
+Estado R: 4 proceso(s)
+Estado Z: 1 proceso(s)
+
+Estados comunes:
+| Código | Significado               |
+| ------ | ------------------------- |
+| R      | Ejecutando                |
+| S      | En espera (interrumpible) |
+| D      | Espera ininterrumpible    |
+| Z      | Zombi                     |
+| T      | Detenido (trazado)        |
+| X      | Muerto (terminado)        |
+
+## Ejercicio 16
+```python
+import os
+import time
+import random
+
+def hijo(tiempo, nombre):
+    print(f"[{nombre}] PID: {os.getpid()} - Dormiré {tiempo}s")
+    time.sleep(tiempo)
+    print(f"[{nombre}] Finalizando.")
+    os._exit(0)
+
+if __name__ == "__main__":
+    hijos = {}
+    orden_terminacion = []
+
+    for i in range(3):
+        duracion = random.randint(1, 5)
+        pid = os.fork()
+        if pid == 0:
+            hijo(duracion, f"Hijo-{i+1}")
+        else:
+            hijos[pid] = f"Hijo-{i+1}"
+
+    while hijos:
+        pid_terminado, _ = os.waitpid(-1, 0)
+        nombre = hijos.pop(pid_terminado)
+        orden_terminacion.append(nombre)
+        print(f"[PADRE] Recolectado {nombre} (PID: {pid_terminado})")
+
+    print("\n Orden de terminación de los hijos:")
+    for i, nombre in enumerate(orden_terminacion, 1):
+        print(f"{i}. {nombre}")
+```
+Ejemplo de salida esperada:
+[Hijo-1] PID: 1234 - Dormiré 3s
+[Hijo-2] PID: 1235 - Dormiré 1s
+[Hijo-3] PID: 1236 - Dormiré 5s
+[PADRE] Recolectado Hijo-2 (PID: 1235)
+[PADRE] Recolectado Hijo-1 (PID: 1234)
+[PADRE] Recolectado Hijo-3 (PID: 1236)
+
+Orden de terminación de los hijos:
+1. Hijo-2
+2. Hijo-1
+3. Hijo-3
