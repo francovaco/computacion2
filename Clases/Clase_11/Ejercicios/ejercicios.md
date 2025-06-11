@@ -639,3 +639,207 @@ Orden de terminación de los hijos:
 1. Hijo-2
 2. Hijo-1
 3. Hijo-3
+
+## Ejercicio 17
+Crear FIFO
+```bash
+mkfifo /tmp/fifo_lector_escritor
+```
+### Escritor.sh
+```bash
+FIFO="/tmp/fifo_lector_escritor"
+echo "[ESCRITOR] Escribiendo en FIFO cada segundo..."
+
+i=1
+while true; do
+    echo "Mensaje $i desde escritor" > "$FIFO"
+    echo "[ESCRITOR] Enviado: Mensaje $i"
+    ((i++))
+    sleep 1
+done
+```
+
+### Lector.sh
+```bash
+FIFO="/tmp/fifo_lector_escritor"
+echo "[LECTOR] Esperando mensajes en FIFO..."
+
+while true; do
+    if read linea < "$FIFO"; then
+        echo "[LECTOR] Recibido: $linea"
+    fi
+done
+```
+En la terminal:
+```bash
+bash lector.sh
+```
+En otrs terminal:
+```bash
+bash escritor.sh
+```
+Comportamiento esperado:
+| Orden                | Resultado                                                              |
+| -------------------- | ---------------------------------------------------------------------- |
+| **Lector primero**   | Se bloquea esperando que el escritor escriba.                          |
+| **Escritor primero** | Se bloquea esperando que alguien lea (hasta que el lector se conecte). |
+
+## Ejercicio 18
+```python
+import os
+import time
+
+def main():
+    r, w = os.pipe()
+    pid = os.fork()
+
+    if pid == 0:
+        # Hijo: cierra extremo de escritura y lee
+        os.close(w)
+        print(f"[HIJO] PID: {os.getpid()} - leyendo del pipe...")
+        time.sleep(5)
+        os._exit(0)
+    else:
+        # Padre: cierra extremo de lectura y escribe
+        os.close(r)
+        print(f"[PADRE] PID: {os.getpid()} - escribiendo en el pipe...")
+        os.write(w, b"mensaje desde el padre\n")
+        time.sleep(5)
+        os.wait()
+        print("[PADRE] Hijo finalizado.")
+
+if __name__ == "__main__":
+    main()
+```
+En una terminal:
+```bash
+python3 pipe_lsof.py
+```
+Mientras se ejecuta, desde otra terminal identificar el PID del proceso padre o hijo (por ejemplo con ps).
+Observar los descriptores abiertos:
+```bash
+lsof -p [PID]
+```
+Ejemplo de salida esperada:
+Buscar líneas con tipo PIPE.
+El FD (File Descriptor) puede ser r, w, 3u, 4u, etc.
+Ejemplo:
+python3  12345  usuario  3w  FIFO  ...  pipe:[123456]
+Esto indica que el proceso tiene un pipe anónimo abierto.
+
+## Ejercicio 19
+### escribir_sin_lock.py
+```python
+import os
+import time
+from multiprocessing import Process
+
+LOG_FILE = "log_sin_lock.txt"
+
+def escribir(proceso_id):
+    for i in range(5):
+        with open(LOG_FILE, "a") as f:
+            f.write(f"[{proceso_id}] Línea {i}\n")
+        time.sleep(0.1)
+
+if __name__ == "__main__":
+    procesos = []
+    for i in range(4):
+        p = Process(target=escribir, args=(f"P{i+1}",))
+        procesos.append(p)
+        p.start()
+
+    for p in procesos:
+        p.join()
+```
+El archivo log_sin_lock.txt puede mostrar líneas mezcladas o incompletas debido a la escritura simultánea sin exclusión mutua.
+
+### escribir_con_lock.py
+```python
+import os
+import time
+from multiprocessing import Process, Lock
+
+LOG_FILE = "log_con_lock.txt"
+
+def escribir(proceso_id, lock):
+    for i in range(5):
+        with lock:
+            with open(LOG_FILE, "a") as f:
+                f.write(f"[{proceso_id}] Línea {i}\n")
+        time.sleep(0.1)
+
+if __name__ == "__main__":
+    lock = Lock()
+    procesos = []
+    for i in range(4):
+        p = Process(target=escribir, args=(f"P{i+1}", lock))
+        procesos.append(p)
+        p.start()
+
+    for p in procesos:
+        p.join()
+```
+El archivo log_con_lock.txt muestra un log ordenado y coherente, sin líneas partidas o solapadas.
+Comparación:
+| Versión    | Salida        | Riesgo |
+| ---------- | ------------- | ------ |
+| Sin Lock   | Inconsistente | Alta   |
+| Con `Lock` | Consistente   | Baja   |
+
+## Ejercicio 20
+### Receptor.py
+```python
+import signal
+import os
+import time
+
+def handler_usr1(signum, frame):
+    print(f"[RECEPTOR] Recibí SIGUSR1 (PID: {os.getpid()}) - 🟡 ¡Acción A!")
+
+def handler_usr2(signum, frame):
+    print(f"[RECEPTOR] Recibí SIGUSR2 (PID: {os.getpid()}) - 🔵 ¡Acción B!")
+
+if __name__ == "__main__":
+    print(f"[RECEPTOR] Esperando señales... PID: {os.getpid()}")
+
+    signal.signal(signal.SIGUSR1, handler_usr1)
+    signal.signal(signal.SIGUSR2, handler_usr2)
+
+    # Espera pasiva infinita
+    while True:
+        signal.pause()
+```
+
+### Emisor.py
+```python
+import os
+import time
+import signal
+import argparse
+
+def main():
+    parser = argparse.ArgumentParser(description="Envía señales a otro proceso.")
+    parser.add_argument("pid", type=int, help="PID del proceso receptor")
+    args = parser.parse_args()
+
+    for i in range(5):
+        sig = signal.SIGUSR1 if i % 2 == 0 else signal.SIGUSR2
+        os.kill(args.pid, sig)
+        print(f"[EMISOR] Enviada {signal.Signals(sig).name} al PID {args.pid}")
+        time.sleep(2)
+
+if __name__ == "__main__":
+    main()
+```
+En una terminal ejecutar el receptor:
+```bash
+python3 receptor.py
+```
+En otra terminal y con el PID de receptor ejecutamos:
+```bash
+python3 emisor.py [PID_DEL_RECEPTOR]
+```
+Salida esperada:
+El receptor imprime mensajes diferentes según si recibe SIGUSR1 o SIGUSR2.
+El emisor alterna entre ambas señales cada 2 segundos.
