@@ -1,0 +1,10 @@
+REPORTE FINAL
+====================
+Bloques totales: 60
+Bloques con alerta: 2
+Bloques corruptos: 0
+
+PROMEDIOS GENERALES
+Frecuencia: 133.70
+Presión: 158.80
+Oxígeno: 93.46
