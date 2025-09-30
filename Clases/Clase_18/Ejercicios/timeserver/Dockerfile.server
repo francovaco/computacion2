@@ -1,0 +1,14 @@
+# Usar imagen base de Python
+FROM python:3.11-slim
+
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Copiar el archivo del servidor
+COPY server.py .
+
+# Exponer el puerto UDP
+EXPOSE 9876/udp
+
+# Ejecutar el servidor
+CMD ["python", "server.py"]

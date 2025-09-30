@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  udp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: udp-time-server
+    ports:
+      # Exponer puerto UDP al host
+      - "9876:9876/udp"
+    networks:
+      - udp-network
+    environment:
+      - TZ=America/Argentina/Mendoza
+    restart: unless-stopped
+
+  udp-client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: udp-time-client
+    depends_on:
+      - udp-server
+    networks:
+      - udp-network
+    # El cliente se ejecuta una vez y termina
+
+networks:
+  udp-network:
+    driver: bridge
