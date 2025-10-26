@@ -1,0 +1,14 @@
+aiohttp
+aiofiles
+beautifulsoup4
+lxml
+html5lib
+selenium
+playwright
+webdriver-manager
+Pillow
+pydantic
+pytest
+pytest-asyncio
+requests
+python-dotenv
