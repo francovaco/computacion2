@@ -39,7 +39,6 @@ class Task:
     
     def set_error(self, error: str):
         self.error = error
-        self.error = error
         self.update_status(TaskStatus.FAILED)
     
     def to_dict(self) -> Dict:
